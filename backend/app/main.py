@@ -4,10 +4,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from .ai import AIService
+from .architect import architecture_plan_dict
 from .config import get_settings
 from .database import Base, engine, get_db
 from .models import AgentRun, Project
-from .schemas import AgentRunCreate, AgentRunRead, HealthResponse, ProjectCreate, ProjectRead
+from .schemas import (
+    AgentRunCreate,
+    AgentRunRead,
+    ArchitecturePlanRead,
+    ArchitectureRequest,
+    HealthResponse,
+    ProjectCreate,
+    ProjectRead,
+)
 
 settings = get_settings()
 ai = AIService()
@@ -19,7 +28,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -55,6 +64,11 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(project)
     return project
+
+
+@app.post(f"{settings.api_prefix}/architect/plan", response_model=ArchitecturePlanRead)
+def create_architecture_plan(payload: ArchitectureRequest):
+    return architecture_plan_dict(payload.requirement)
 
 
 @app.post(f"{settings.api_prefix}/agent-runs", response_model=AgentRunRead, status_code=201)
