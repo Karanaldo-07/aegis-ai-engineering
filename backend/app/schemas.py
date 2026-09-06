@@ -63,6 +63,18 @@ class DeveloperPlanRead(BaseModel):
     guardrails: list[str]
 
 
+class TestingRequest(BaseModel):
+    requirement: str = Field(min_length=10, max_length=20000)
+
+
+class TestingPlanRead(BaseModel):
+    summary: str
+    strategy: list[str]
+    test_cases: list[str]
+    quality_gates: list[str]
+    guardrails: list[str]
+
+
 class ToolRead(BaseModel):
     name: str
     description: str
