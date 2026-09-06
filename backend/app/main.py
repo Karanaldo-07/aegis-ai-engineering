@@ -7,6 +7,7 @@ from .ai import AIService
 from .architect import architecture_plan_dict
 from .config import get_settings
 from .database import Base, engine, get_db
+from .llm import OpenAIResponsesClient
 from .models import AgentRun, Project
 from .schemas import (
     AgentRunCreate,
@@ -20,6 +21,7 @@ from .schemas import (
 
 settings = get_settings()
 ai = AIService()
+llm = OpenAIResponsesClient()
 
 
 @asynccontextmanager
@@ -28,7 +30,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, version="0.2.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version="0.3.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -67,7 +69,12 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
 
 
 @app.post(f"{settings.api_prefix}/architect/plan", response_model=ArchitecturePlanRead)
-def create_architecture_plan(payload: ArchitectureRequest):
+async def create_architecture_plan(payload: ArchitectureRequest):
+    if settings.ai_mode.lower() == "openai":
+        try:
+            return await llm.architecture_plan(payload.requirement)
+        except (httpx.HTTPStatusError, httpx.HTTPError, RuntimeError, ValueError) as exc:
+            raise HTTPException(status_code=502, detail=f"AI provider error: {exc}") from exc
     return architecture_plan_dict(payload.requirement)
 
 
