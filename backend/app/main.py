@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import httpx
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, text
