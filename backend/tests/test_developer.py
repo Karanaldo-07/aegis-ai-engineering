@@ -1,3 +1,5 @@
+import pytest
+
 from app.developer import build_developer_plan
 from app.tools import ToolDefinition, ToolRegistry
 
@@ -5,7 +7,7 @@ from app.tools import ToolDefinition, ToolRegistry
 def test_developer_plan_is_deterministic_and_guarded():
     plan = build_developer_plan("Add repository-aware code review")
     assert plan.summary.startswith("Prepare an incremental")
-    assert "human approval" in " ".join(plan.guardrails).lower()
+    assert "approved patch" in " ".join(plan.guardrails).lower()
     assert plan.tests
 
 
@@ -21,9 +23,5 @@ def test_tool_registry_enforces_maximum_risk():
 
 def test_unknown_tool_is_rejected():
     registry = ToolRegistry()
-    try:
+    with pytest.raises(KeyError, match="Unknown tool"):
         registry.get("missing")
-    except KeyError as exc:
-        assert "Unknown tool" in str(exc.value)
-    else:
-        raise AssertionError("Unknown tool should be rejected")
