@@ -37,3 +37,15 @@ class AgentRunRead(BaseModel):
     output_text: str
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+class ArchitectureRequest(BaseModel):
+    requirement: str = Field(min_length=10, max_length=20000)
+
+
+class ArchitecturePlanRead(BaseModel):
+    summary: str
+    architecture: list[str]
+    components: list[str]
+    risks: list[str]
+    next_steps: list[str]
