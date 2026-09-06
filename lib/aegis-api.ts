@@ -6,7 +6,7 @@ export type ArchitecturePlan = {
   next_steps: string[];
 };
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 export async function generateArchitecture(requirement: string): Promise<ArchitecturePlan> {
   const response = await fetch(`${API_BASE_URL}/api/v1/architect/plan`, {
