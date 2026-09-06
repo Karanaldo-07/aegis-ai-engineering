@@ -14,6 +14,14 @@ export type DeveloperPlan = {
   guardrails: string[];
 };
 
+export type TestingPlan = {
+  summary: string;
+  strategy: string[];
+  test_cases: string[];
+  quality_gates: string[];
+  guardrails: string[];
+};
+
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -43,4 +51,8 @@ export function generateArchitecture(requirement: string): Promise<ArchitectureP
 
 export function generateDeveloperPlan(requirement: string): Promise<DeveloperPlan> {
   return postJson<DeveloperPlan>('/api/v1/developer/plan', { requirement });
+}
+
+export function generateTestingPlan(requirement: string): Promise<TestingPlan> {
+  return postJson<TestingPlan>('/api/v1/testing/plan', { requirement });
 }
