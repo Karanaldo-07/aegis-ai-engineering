@@ -49,3 +49,21 @@ class ArchitecturePlanRead(BaseModel):
     components: list[str]
     risks: list[str]
     next_steps: list[str]
+
+
+class DeveloperRequest(BaseModel):
+    requirement: str = Field(min_length=10, max_length=20000)
+
+
+class DeveloperPlanRead(BaseModel):
+    summary: str
+    implementation_steps: list[str]
+    files_to_change: list[str]
+    tests: list[str]
+    guardrails: list[str]
+
+
+class ToolRead(BaseModel):
+    name: str
+    description: str
+    risk: str
