@@ -8,6 +8,7 @@ from .ai import AIService
 from .architect import architecture_plan_dict
 from .config import get_settings
 from .database import Base, engine, get_db
+from .developer import developer_plan_dict
 from .llm import OpenAIResponsesClient
 from .models import AgentRun, Project
 from .schemas import (
@@ -15,10 +16,14 @@ from .schemas import (
     AgentRunRead,
     ArchitecturePlanRead,
     ArchitectureRequest,
+    DeveloperPlanRead,
+    DeveloperRequest,
     HealthResponse,
     ProjectCreate,
     ProjectRead,
+    ToolRead,
 )
+from .tools import registry
 
 settings = get_settings()
 ai = AIService()
@@ -31,7 +36,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, version="0.3.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version="0.4.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -77,6 +82,17 @@ async def create_architecture_plan(payload: ArchitectureRequest):
         except (httpx.HTTPStatusError, httpx.HTTPError, RuntimeError, ValueError) as exc:
             raise HTTPException(status_code=502, detail=f"AI provider error: {exc}") from exc
     return architecture_plan_dict(payload.requirement)
+
+
+@app.post(f"{settings.api_prefix}/developer/plan", response_model=DeveloperPlanRead)
+def create_developer_plan(payload: DeveloperRequest):
+    """Create a safe implementation proposal; it never writes to a repository."""
+    return developer_plan_dict(payload.requirement)
+
+
+@app.get(f"{settings.api_prefix}/tools", response_model=list[ToolRead])
+def list_tools():
+    return [ToolRead(name=t.name, description=t.description, risk=t.risk) for t in registry.list()]
 
 
 @app.post(f"{settings.api_prefix}/agent-runs", response_model=AgentRunRead, status_code=201)
