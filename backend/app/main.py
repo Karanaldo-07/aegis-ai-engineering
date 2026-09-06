@@ -21,8 +21,11 @@ from .schemas import (
     HealthResponse,
     ProjectCreate,
     ProjectRead,
+    TestingPlanRead,
+    TestingRequest,
     ToolRead,
 )
+from .testing_agent import testing_plan_dict
 from .tools import registry
 
 settings = get_settings()
@@ -36,7 +39,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title=settings.app_name, version="0.4.0", lifespan=lifespan)
+app = FastAPI(title=settings.app_name, version="0.5.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
@@ -88,6 +91,12 @@ async def create_architecture_plan(payload: ArchitectureRequest):
 def create_developer_plan(payload: DeveloperRequest):
     """Create a safe implementation proposal; it never writes to a repository."""
     return developer_plan_dict(payload.requirement)
+
+
+@app.post(f"{settings.api_prefix}/testing/plan", response_model=TestingPlanRead)
+def create_testing_plan(payload: TestingRequest):
+    """Create a verification proposal; it never executes tests or changes files."""
+    return testing_plan_dict(payload.requirement)
 
 
 @app.get(f"{settings.api_prefix}/tools", response_model=list[ToolRead])
